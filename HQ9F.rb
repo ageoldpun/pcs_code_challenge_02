@@ -1,20 +1,34 @@
-#Creates a global method H which will output "Hello World"
+require 'minitest/autorun'
+
+# Creates a global method H which will output "Hello World"
 def h
-    puts "Hello World"
+  puts "Hello World"
 end
 
-#Class for funny joke.  Ha Ha.
+# Class for funny joke.  Ha Ha.
 class HQ9F
+  include Enumerable
+
   def initialize
     @accumulator = 0
   end
 
+  def array= value
+    @array = value
+  end
+
+  # delegation
+  def each &block
+    @array.each(&block)
+  end
+
   def _99(num_beer)
-    until num_beer == 0
-      puts "#{num_beer.to_s} bottles of beer on the wall, #{num_beer.to_s} bottles of beer.\nTake one down, pass it around, #{(num_beer-1).to_s} bottles of beer on the wall."
-      num_beer -= 1
+    song = ""
+    num_beer.downto(1) do |num|
+      song << "#{num} bottles of beer on the wall, #{num} bottles of beer.\n"
+      song << "Take one down, pass it around, #{num-1} bottles of beer on the wall.\n"
     end
-    puts "No more beer.  Time to pass out next to the toilet."
+    song << %!"Schno m're beers.  Time to 'er nap nescht to ther terlet."\n!
   end
 
   def +
@@ -22,7 +36,29 @@ class HQ9F
   end
 end
 
-h
+# A class setup specifically for using Minitest
+class TestMyClass < MiniTest::Unit::TestCase
+  def setup
+    @hq9f = HQ9F.new
+  end
 
-test = HQ9F.new
-puts "#{test._99(99)}"
+  def test__99
+    assert_equal %(3 bottles of beer on the wall, 3 bottles of beer.
+Take one down, pass it around, 2 bottles of beer on the wall.
+2 bottles of beer on the wall, 2 bottles of beer.
+Take one down, pass it around, 1 bottles of beer on the wall.
+1 bottles of beer on the wall, 1 bottles of beer.
+Take one down, pass it around, 0 bottles of beer on the wall.
+"Schno m're beers.  Time to 'er nap nescht to ther terlet."
+), @hq9f._99(3)
+  end
+  
+  def test_each
+    @hq9f.array = [5, 5, 5, 5]
+    sum = 0
+    @hq9f.each do |num|
+      sum += num
+    end
+    assert_equal 20, sum
+  end
+end
